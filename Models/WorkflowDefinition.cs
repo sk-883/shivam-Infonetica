@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-
-namespace ConfigurableWorkflowEngine.Domain.Models
+namespace WorkflowEngine.Models
 {
     public class WorkflowDefinition
     {
-        public string Id { get; init; } = Guid.NewGuid().ToString();
-        public List<State> States { get; init; } = new();
-        public List<ActionDefinition> Actions { get; init; } = new();
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public List<State> States { get; set; } = new();
+        public List<WorkflowAction> Actions { get; set; } = new();
     }
 }

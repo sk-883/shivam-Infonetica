@@ -1,13 +1,10 @@
-using System;
-
-namespace ConfigurableWorkflowEngine.Domain.Models
+namespace WorkflowEngine.Models
 {
-    public record HistoryRecord(
-        string ActionId,
-        DateTime Timestamp = default
-    )
+    public class HistoryRecord
     {
-        public HistoryRecord() : this(string.Empty, DateTime.UtcNow) { }
-        public HistoryRecord(string actionId) : this(actionId, DateTime.UtcNow) { }
+        public string ActionId { get; set; }
+        public string FromState { get; set; }
+        public string ToState { get; set; }
+        public DateTime Timestamp { get; set; }
     }
 }

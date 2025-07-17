@@ -1,12 +1,11 @@
-using System.Collections.Generic;
-using ConfigurableWorkflowEngine.Domain.Models;
+using WorkflowEngine.Models;
 
-namespace ConfigurableWorkflowEngine.Repositories
+namespace WorkflowEngine.Repositories
 {
     public interface IWorkflowDefinitionRepository
     {
-        bool Add(WorkflowDefinition def);
-        WorkflowDefinition? Get(string id);
-        IEnumerable<WorkflowDefinition> List();
+        IEnumerable<WorkflowDefinition> GetAll();
+        WorkflowDefinition Get(string id);
+        void Create(WorkflowDefinition definition);
     }
 }

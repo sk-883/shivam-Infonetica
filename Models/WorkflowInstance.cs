@@ -1,13 +1,17 @@
-using System;
-using System.Collections.Generic;
-
-namespace ConfigurableWorkflowEngine.Domain.Models
+namespace WorkflowEngine.Models
 {
     public class WorkflowInstance
     {
-        public string Id { get; init; } = Guid.NewGuid().ToString();
-        public string DefinitionId { get; init; } = default!;
-        public string CurrentStateId { get; set; } = default!;
-        public List<HistoryRecord> History { get; } = new();
+        public string Id { get; set; }
+        public string DefinitionId { get; set; }
+        public string CurrentState { get; set; }
+        public List<HistoryRecord> History { get; set; } = new();
+
+        public WorkflowInstance(string id, string definitionId, string initialState)
+        {
+            Id = id;
+            DefinitionId = definitionId;
+            CurrentState = initialState;
+        }
     }
 }
