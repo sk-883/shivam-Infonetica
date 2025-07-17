@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/sk_883/Tech/Infonetica/shivam-assignment-infonetica/configurable-workflow-engine/configurable-workflow-engine.csproj",
+      "projectUniqueName": "/home/sk_883/Tech/Infonetica/shivam-Infonetica/configurable-workflow-engine/configurable-workflow-engine.csproj",
       "projectName": "configurable-workflow-engine",
-      "projectPath": "/home/sk_883/Tech/Infonetica/shivam-assignment-infonetica/configurable-workflow-engine/configurable-workflow-engine.csproj",
+      "projectPath": "/home/sk_883/Tech/Infonetica/shivam-Infonetica/configurable-workflow-engine/configurable-workflow-engine.csproj",
       "packagesPath": "/home/sk_883/.nuget/packages/",
-      "outputPath": "/home/sk_883/Tech/Infonetica/shivam-assignment-infonetica/configurable-workflow-engine/obj/",
+      "outputPath": "/home/sk_883/Tech/Infonetica/shivam-Infonetica/configurable-workflow-engine/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/sk_883/.nuget/NuGet/NuGet.Config"
