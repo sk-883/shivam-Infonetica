@@ -1,12 +1,12 @@
-using System.Collections.Generic;
-using ConfigurableWorkflowEngine.Domain.Models;
+using WorkflowEngine.Models;
 
-namespace ConfigurableWorkflowEngine.Repositories
+namespace WorkflowEngine.Repositories
 {
     public interface IWorkflowInstanceRepository
     {
-        bool Add(WorkflowInstance inst);
+        IEnumerable<WorkflowInstance> GetAll();
         WorkflowInstance? Get(string id);
-        IEnumerable<WorkflowInstance> List();
+        WorkflowInstance Create(string definitionId);
+        void ExecuteAction(string instanceId, string actionId);
     }
 }

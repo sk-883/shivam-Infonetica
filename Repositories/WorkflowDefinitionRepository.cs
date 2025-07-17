@@ -1,21 +1,48 @@
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using ConfigurableWorkflowEngine.Domain.Models;
+using WorkflowEngine.Models;
 
-namespace ConfigurableWorkflowEngine.Repositories
+namespace WorkflowEngine.Repositories
 {
     public class WorkflowDefinitionRepository : IWorkflowDefinitionRepository
     {
-        private readonly ConcurrentDictionary<string, WorkflowDefinition> _store
-            = new();
+        private readonly Dictionary<string, WorkflowDefinition> _definitions = new();
 
-        public bool Add(WorkflowDefinition def) =>
-            _store.TryAdd(def.Id, def);
+        public IEnumerable<WorkflowDefinition> GetAll() => _definitions.Values;
 
-        public WorkflowDefinition? Get(string id) =>
-            _store.TryGetValue(id, out var def) ? def : null;
+        public WorkflowDefinition? Get(string id)
+            => _definitions.TryGetValue(id, out var def) ? def : null;
 
-        public IEnumerable<WorkflowDefinition> List() =>
-            _store.Values;
+        public void Create(WorkflowDefinition definition)
+        {
+            if (_definitions.ContainsKey(definition.Id))
+                throw new InvalidOperationException($"Definition '{definition.Id}' already exists.");
+
+            Validate(definition);
+            _definitions[definition.Id] = definition;
+        }
+
+        private void Validate(WorkflowDefinition def)
+        {
+            // Unique state IDs
+            if (def.States.GroupBy(s => s.Id).Any(g => g.Count() > 1))
+                throw new InvalidOperationException("State IDs must be unique.");
+
+            // Unique action IDs
+            if (def.Actions.GroupBy(a => a.Id).Any(g => g.Count() > 1))
+                throw new InvalidOperationException("Action IDs must be unique.");
+
+            // Exactly one initial state
+            if (def.States.Count(s => s.IsInitial) != 1)
+                throw new InvalidOperationException("There must be exactly one initial state.");
+
+            // All transitions refer to existing states
+            var ids = def.States.Select(s => s.Id).ToHashSet();
+            foreach (var a in def.Actions)
+            {
+                if (!ids.Contains(a.ToState))
+                    throw new InvalidOperationException($"Action '{a.Id}' → unknown ToState '{a.ToState}'.");
+                if (a.FromStates.Any(fs => !ids.Contains(fs)))
+                    throw new InvalidOperationException($"Action '{a.Id}' has unknown FromStates.");
+            }
+        }
     }
 }
