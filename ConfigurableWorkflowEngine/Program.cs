@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Http.Json;
 using WorkflowEngine.Models;
 using WorkflowEngine.Repositories;
 
-public record ErrorResponse(string Error, string Code, string Details, DateTime Timestamp);
-public record StartInstanceRequest(string DefinitionId);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -144,3 +142,6 @@ app.MapPost("/instances/{id}/actions/{actionId}", ([FromServices] IWorkflowInsta
 .WithOpenApi();
 
 app.Run();
+
+public record ErrorResponse(string Error, string Code, string Details, DateTime Timestamp);
+public record StartInstanceRequest(string DefinitionId);
