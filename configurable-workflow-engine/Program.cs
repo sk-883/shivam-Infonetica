@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using ConfigurableWorkflowEngine.Models;
 using ConfigurableWorkflowEngine.Models.DTOs;
 using ConfigurableWorkflowEngine.Repositories;
@@ -7,19 +9,33 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.Configure<JsonOptions>(opts => opts.SerializerOptions.WriteIndented = true);
+
+// JSON formatting
+builder.Services.Configure<JsonOptions>(opts =>
+    opts.SerializerOptions.WriteIndented = true);
 
 // register repositories
 builder.Services.AddSingleton<IWorkflowDefinitionRepository, InMemoryWorkflowDefinitionRepository>();
 builder.Services.AddSingleton<IWorkflowInstanceRepository, InMemoryWorkflowInstanceRepository>();
 
+// Swagger / OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
+
+// Swagger UI at root: http://localhost:5000/
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Workflow Engine V1");
+    c.RoutePrefix = string.Empty;
+});
 
 // Create a new workflow definition
 app.MapPost("/definitions", (CreateWorkflowDefinitionRequest req,
     IWorkflowDefinitionRepository defs) =>
 {
-    // basic validation
     if (req.States.Select(s => s.Id).Distinct().Count() != req.States.Count)
         return Results.BadRequest("Duplicate state IDs.");
     if (req.Actions.Select(a => a.Id).Distinct().Count() != req.Actions.Count)
@@ -56,7 +72,7 @@ app.MapPost("/definitions", (CreateWorkflowDefinitionRequest req,
     return Results.Created($"/definitions/{def.Id}", def);
 });
 
-// Retrieve a definition or list all
+// Retrieve definitions
 app.MapGet("/definitions/{id}", (string id, IWorkflowDefinitionRepository defs) =>
     defs.Get(id) is WorkflowDefinition d ? Results.Ok(d) : Results.NotFound());
 app.MapGet("/definitions", (IWorkflowDefinitionRepository defs) => Results.Ok(defs.GetAll()));
@@ -99,23 +115,22 @@ app.MapPost("/instances/{instanceId}/actions/{actionId}", (
     if (!action.FromStates.Contains(inst.CurrentState))
         return Results.BadRequest($"Action '{actionId}' cannot be applied from state '{inst.CurrentState}'.");
 
-    var newState = action.ToState;
     var record = new TransitionRecord
     {
         ActionId = action.Id,
         FromState = inst.CurrentState,
-        ToState = newState,
+        ToState = action.ToState,
         Timestamp = DateTime.UtcNow
     };
 
     inst.History.Add(record);
-    inst.CurrentState = newState;
+    inst.CurrentState = action.ToState;
     instances.Update(inst);
 
     return Results.Ok(inst);
 });
 
-// Retrieve an instance or list all
+// Retrieve instances
 app.MapGet("/instances/{id}", (string id, IWorkflowInstanceRepository instances) =>
     instances.Get(id) is WorkflowInstance i ? Results.Ok(i) : Results.NotFound());
 app.MapGet("/instances", (IWorkflowInstanceRepository instances) => Results.Ok(instances.GetAll()));
