@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/configurable-workflow-engine.props" />
+</Project>
