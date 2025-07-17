@@ -1,6 +1,9 @@
-using WorkflowEngine.Models;
+using ConfigurableWorkflowEngine.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace WorkflowEngine.Repositories
+namespace ConfigurableWorkflowEngine.Repositories
 {
     public class WorkflowDefinitionRepository : IWorkflowDefinitionRepository
     {
@@ -8,8 +11,8 @@ namespace WorkflowEngine.Repositories
 
         public IEnumerable<WorkflowDefinition> GetAll() => _definitions.Values;
 
-        public WorkflowDefinition? Get(string id)
-            => _definitions.TryGetValue(id, out var def) ? def : null;
+        public WorkflowDefinition Get(string id)
+            => _definitions.TryGetValue(id, out var def) ? def : null!;
 
         public void Create(WorkflowDefinition definition)
         {
@@ -22,19 +25,15 @@ namespace WorkflowEngine.Repositories
 
         private void Validate(WorkflowDefinition def)
         {
-            // Unique state IDs
             if (def.States.GroupBy(s => s.Id).Any(g => g.Count() > 1))
                 throw new InvalidOperationException("State IDs must be unique.");
 
-            // Unique action IDs
             if (def.Actions.GroupBy(a => a.Id).Any(g => g.Count() > 1))
                 throw new InvalidOperationException("Action IDs must be unique.");
 
-            // Exactly one initial state
             if (def.States.Count(s => s.IsInitial) != 1)
                 throw new InvalidOperationException("There must be exactly one initial state.");
 
-            // All transitions refer to existing states
             var ids = def.States.Select(s => s.Id).ToHashSet();
             foreach (var a in def.Actions)
             {

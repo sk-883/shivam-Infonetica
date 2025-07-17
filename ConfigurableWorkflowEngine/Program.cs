@@ -1,19 +1,18 @@
-
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.Json;
-using WorkflowEngine.Models;
-using WorkflowEngine.Repositories;
-
+using ConfigurableWorkflowEngine.Models;
+using ConfigurableWorkflowEngine.Repositories;
+using ConfigurableWorkflowEngine.Dtos;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1) JSON settings (camelCase)
+// 1) JSON settings: camelCase
 builder.Services.Configure<JsonOptions>(opts =>
     opts.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 
-// 2) Register repositories
+// 2) Register repos
 builder.Services.AddSingleton<IWorkflowDefinitionRepository, WorkflowDefinitionRepository>();
 builder.Services.AddSingleton<IWorkflowInstanceRepository, WorkflowInstanceRepository>();
 
@@ -23,14 +22,15 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 4) Enable Swagger middleware
+// 4) Enable Swagger UI
 app.UseSwagger();
 app.UseSwaggerUI();
+
 
 // ─── Workflow Definitions ────────────────────────────────────────────────────
 
 // Create a new workflow definition
-app.MapPost("/definitions", ([FromServices] IWorkflowDefinitionRepository repo, [FromBody] WorkflowDefinition def) =>
+app.MapPost("/definitions", (IWorkflowDefinitionRepository repo, [FromBody] WorkflowDefinition def) =>
 {
     try
     {
@@ -52,13 +52,13 @@ app.MapPost("/definitions", ([FromServices] IWorkflowDefinitionRepository repo, 
 .WithOpenApi();
 
 // List all definitions
-app.MapGet("/definitions", ([FromServices] IWorkflowDefinitionRepository repo) =>
+app.MapGet("/definitions", (IWorkflowDefinitionRepository repo) =>
     Results.Ok(repo.GetAll()))
 .WithName("ListDefinitions")
 .WithOpenApi();
 
-// Get a single definition
-app.MapGet("/definitions/{id}", ([FromServices] IWorkflowDefinitionRepository repo, string id) =>
+// Get definition by ID
+app.MapGet("/definitions/{id}", (IWorkflowDefinitionRepository repo, string id) =>
 {
     var def = repo.Get(id);
     return def is not null
@@ -76,7 +76,7 @@ app.MapGet("/definitions/{id}", ([FromServices] IWorkflowDefinitionRepository re
 // ─── Workflow Instances ─────────────────────────────────────────────────────
 
 // Start a new instance
-app.MapPost("/instances", ([FromServices] IWorkflowInstanceRepository repo, [FromBody] StartInstanceRequest req) =>
+app.MapPost("/instances", (IWorkflowInstanceRepository repo, [FromBody] StartInstanceRequest req) =>
 {
     try
     {
@@ -98,13 +98,13 @@ app.MapPost("/instances", ([FromServices] IWorkflowInstanceRepository repo, [Fro
 .WithOpenApi();
 
 // List all instances
-app.MapGet("/instances", ([FromServices] IWorkflowInstanceRepository repo) =>
+app.MapGet("/instances", (IWorkflowInstanceRepository repo) =>
     Results.Ok(repo.GetAll()))
 .WithName("ListInstances")
 .WithOpenApi();
 
-// Get one instance
-app.MapGet("/instances/{id}", ([FromServices] IWorkflowInstanceRepository repo, string id) =>
+// Get an instance by ID
+app.MapGet("/instances/{id}", (IWorkflowInstanceRepository repo, string id) =>
 {
     var inst = repo.Get(id);
     return inst is not null
@@ -120,7 +120,7 @@ app.MapGet("/instances/{id}", ([FromServices] IWorkflowInstanceRepository repo, 
 .WithOpenApi();
 
 // Execute an action on an instance
-app.MapPost("/instances/{id}/actions/{actionId}", ([FromServices] IWorkflowInstanceRepository repo, string id, string actionId) =>
+app.MapPost("/instances/{id}/actions/{actionId}", (IWorkflowInstanceRepository repo, string id, string actionId) =>
 {
     try
     {
@@ -142,6 +142,3 @@ app.MapPost("/instances/{id}/actions/{actionId}", ([FromServices] IWorkflowInsta
 .WithOpenApi();
 
 app.Run();
-
-public record ErrorResponse(string Error, string Code, string Details, DateTime Timestamp);
-public record StartInstanceRequest(string DefinitionId);

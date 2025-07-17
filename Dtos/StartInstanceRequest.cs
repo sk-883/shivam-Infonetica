@@ -1,5 +1,4 @@
-// File: Dtos/StartInstanceRequest.cs
-namespace WorkflowEngine.Dtos
+namespace ConfigurableWorkflowEngine.Dtos
 {
     public record StartInstanceRequest(string DefinitionId);
 }

@@ -1,6 +1,9 @@
-using WorkflowEngine.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ConfigurableWorkflowEngine.Models;
 
-namespace WorkflowEngine.Repositories
+namespace ConfigurableWorkflowEngine.Repositories
 {
     public class WorkflowInstanceRepository : IWorkflowInstanceRepository
     {
@@ -12,8 +15,8 @@ namespace WorkflowEngine.Repositories
 
         public IEnumerable<WorkflowInstance> GetAll() => _instances.Values;
 
-        public WorkflowInstance? Get(string id)
-            => _instances.TryGetValue(id, out var inst) ? inst : null;
+        public WorkflowInstance Get(string id)
+            => _instances.TryGetValue(id, out var inst) ? inst : null!;
 
         public WorkflowInstance Create(string definitionId)
         {
@@ -32,7 +35,8 @@ namespace WorkflowEngine.Repositories
         {
             var inst = Get(instanceId)
                        ?? throw new InvalidOperationException($"Instance '{instanceId}' not found.");
-            var def = _defRepo.Get(inst.DefinitionId)!;
+            var def = _defRepo.Get(inst.DefinitionId)
+                      ?? throw new InvalidOperationException($"Definition '{inst.DefinitionId}' not found.");
             var act = def.Actions.SingleOrDefault(a => a.Id == actionId)
                       ?? throw new InvalidOperationException($"Action '{actionId}' not in definition.");
 

@@ -1,4 +1,4 @@
-namespace WorkflowEngine.Models
+namespace ConfigurableWorkflowEngine.Models
 {
     public class WorkflowDefinition
     {

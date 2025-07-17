@@ -1,5 +1,4 @@
-// File: Dtos/ErrorResponse.cs
-namespace WorkflowEngine.Dtos
+namespace ConfigurableWorkflowEngine.Dtos
 {
     public record ErrorResponse(
         string Error,

@@ -1,6 +1,7 @@
-using WorkflowEngine.Models;
+using ConfigurableWorkflowEngine.Models;
+using System.Collections.Generic;
 
-namespace WorkflowEngine.Repositories
+namespace ConfigurableWorkflowEngine.Repositories
 {
     public interface IWorkflowDefinitionRepository
     {
