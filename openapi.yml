@@ -1,0 +1,249 @@
+openapi: 3.0.1
+info:
+  title: Configurable Workflow Engine
+  version: "1.0.0"
+  description: |
+    Minimal .NET 8 API for defining and running state-machine workflows.
+servers:
+  - url: http://localhost:5000
+paths:
+  /definitions:
+    get:
+      summary: List all workflow definitions
+      responses:
+        '200':
+          description: Array of workflow definitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkflowDefinition'
+    post:
+      summary: Create a new workflow definition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkflowDefinitionRequest'
+      responses:
+        '201':
+          description: Definition created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowDefinition'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Definition ID conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /definitions/{definitionId}:
+    get:
+      summary: Get a single workflow definition
+      parameters:
+        - in: path
+          name: definitionId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Workflow definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowDefinition'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /definitions/{definitionId}/instances:
+    post:
+      summary: Start a new instance of a workflow
+      parameters:
+        - in: path
+          name: definitionId
+          schema:
+            type: string
+          required: true
+      responses:
+        '201':
+          description: Instance created at initial state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowInstance'
+        '404':
+          description: Definition not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /instances:
+    get:
+      summary: List all workflow instances
+      responses:
+        '200':
+          description: Array of workflow instances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkflowInstance'
+
+  /instances/{instanceId}:
+    get:
+      summary: Get a single workflow instance
+      parameters:
+        - in: path
+          name: instanceId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Workflow instance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowInstance'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /instances/{instanceId}/actions/{actionId}:
+    post:
+      summary: Execute an action on an existing instance
+      parameters:
+        - in: path
+          name: instanceId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: actionId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Instance updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowInstance'
+        '400':
+          description: Bad request (invalid action, state, or final-state)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Instance not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    WorkflowState:
+      type: object
+      required: [id,name,isInitial,isFinal,enabled]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        isInitial:
+          type: boolean
+        isFinal:
+          type: boolean
+        enabled:
+          type: boolean
+
+    WorkflowAction:
+      type: object
+      required: [id,name,enabled,fromStates,toState]
+      properties:
+        id:   { type: string }
+        name: { type: string }
+        enabled:
+          type: boolean
+        fromStates:
+          type: array
+          items: { type: string }
+        toState:
+          type: string
+
+    WorkflowDefinition:
+      type: object
+      required: [id,name,states,actions]
+      properties:
+        id:     { type: string }
+        name:   { type: string }
+        states:
+          type: array
+          items: { $ref: '#/components/schemas/WorkflowState' }
+        actions:
+          type: array
+          items: { $ref: '#/components/schemas/WorkflowAction' }
+
+    CreateWorkflowDefinitionRequest:
+      allOf:
+        - $ref: '#/components/schemas/WorkflowDefinition'
+      description: |
+        Same as WorkflowDefinition, used for incoming POST payload.
+
+    TransitionRecord:
+      type: object
+      required: [actionId,fromState,toState,timestamp]
+      properties:
+        actionId: { type: string }
+        fromState:{ type: string }
+        toState:  { type: string }
+        timestamp:
+          type: string
+          format: date-time
+
+    WorkflowInstance:
+      type: object
+      required: [id,definitionId,currentState,history]
+      properties:
+        id:
+          type: string
+        definitionId:
+          type: string
+        currentState:
+          type: string
+        history:
+          type: array
+          items: { $ref: '#/components/schemas/TransitionRecord' }
+
+    Error:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
