@@ -6,7 +6,7 @@
     COPY ["configurable-workflow-engine.csproj", "./"]
     RUN dotnet restore
     
-    # Copy all source and publish
+    # Copy everything else and publish
     COPY . .
     RUN dotnet publish -c Release -o /app/publish
     
@@ -14,7 +14,7 @@
     FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
     WORKDIR /app
     
-    # Configure to listen on port 8080 (Cloud Run default)
+    # Listen on port 8080 (Cloud Run default)
     ENV ASPNETCORE_URLS=http://+:8080
     
     # Copy published output
